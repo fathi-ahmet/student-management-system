@@ -1,0 +1,38 @@
+coverage/
+*.log
+.DS_Store
+server/uploads/*
+!server/uploads/.gitkeep
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Build files
+dist/
+build/
+.vite/
+
+# Logs
+*.log
+npm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local database files
+*.sqlite
+*.sqlite3
+
+# Temporary files
+*.tmp
+*.temp

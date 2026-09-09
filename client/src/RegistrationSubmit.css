@@ -1,0 +1,469 @@
+.registration-submit-page {
+  min-height: 100vh;
+  background: #f4f7fb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+.registration-submit-shell {
+  width: 100%;
+  max-width: 1180px;
+  min-height: 720px;
+  display: grid;
+  grid-template-columns: 42% 58%;
+  background: #ffffff;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.12);
+}
+
+/* =========================
+   LEFT BRAND PANEL
+========================= */
+
+.registration-submit-brand {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 42px;
+  color: #ffffff;
+  background: rgb(13, 136, 237);
+  overflow: hidden;
+}
+
+.registration-submit-brand::before {
+  content: "";
+  position: absolute;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  right: -180px;
+  top: -130px;
+}
+
+.registration-submit-brand::after {
+  content: "";
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  left: -150px;
+  bottom: -110px;
+}
+
+.brand-header {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.brand-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  color: #102a43;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.brand-name {
+  font-size: 18px;
+  font-weight: 750;
+  letter-spacing: -0.3px;
+}
+
+.brand-subtitle {
+  margin-top: 2px;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 12px;
+}
+
+.brand-content {
+  position: relative;
+  z-index: 1;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.brand-badge {
+  display: inline-flex;
+  padding: 7px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+}
+
+.brand-content h2 {
+  max-width: 390px;
+  margin: 24px 0 16px;
+  font-size: 36px;
+  line-height: 1.12;
+  letter-spacing: -1.3px;
+}
+
+.brand-content h2 span {
+  display: block;
+  color: #8ec5ff;
+}
+
+.brand-content > p {
+  max-width: 390px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.brand-features {
+  margin-top: 34px;
+  display: flex;
+  flex-direction: column;
+  gap: 19px;
+}
+
+.brand-feature {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.feature-icon {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.brand-feature strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.brand-feature span {
+  display: block;
+  margin-top: 3px;
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 11px;
+}
+
+.brand-footer {
+  position: relative;
+  z-index: 1;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 11px;
+}
+
+/* =========================
+   RIGHT CONTENT
+========================= */
+
+.registration-submit-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  background: #ffffff;
+}
+
+.registration-submit-card {
+  width: 100%;
+  max-width: 560px;
+}
+
+.success-icon {
+  width: 62px;
+  height: 62px;
+  margin-bottom: 25px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ecfdf3;
+  border: 1px solid #bbf7d0;
+  color: #16803c;
+  font-size: 25px;
+  font-weight: 700;
+}
+
+.submit-eyebrow {
+  color: #47779f;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 1.5px;
+}
+
+.registration-submit-card h1 {
+  margin: 10px 0 12px;
+  color: #102a43;
+  font-size: 34px;
+  line-height: 1.15;
+  letter-spacing: -1px;
+}
+
+.submit-description {
+  max-width: 500px;
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+/* =========================
+   STATUS
+========================= */
+
+.application-status {
+  margin-top: 28px;
+  padding: 17px 19px;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: #f8fbff;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #f59e0b;
+  box-shadow: 0 0 0 4px #fef3c7;
+}
+
+.status-label {
+  display: block;
+  margin-bottom: 3px;
+  color: #94a3b8;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 1px;
+}
+
+.status-indicator strong {
+  color: #334155;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* =========================
+   DETAILS
+========================= */
+
+.application-details {
+  margin-top: 14px;
+  border: 1px solid #e5eaf0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 14px 17px;
+  border-bottom: 1px solid #edf1f5;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-row span {
+  color: #8a99aa;
+  font-size: 12px;
+}
+
+.detail-row strong {
+  color: #334155;
+  font-size: 12px;
+  font-weight: 650;
+  text-align: right;
+  word-break: break-word;
+}
+
+/* =========================
+   BACKEND MESSAGE
+========================= */
+
+.submit-message {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 13px 15px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.message-icon {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e2e8f0;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.submit-message p {
+  margin: 0;
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+/* =========================
+   NEXT STEP
+========================= */
+
+.next-step {
+  margin-top: 25px;
+}
+
+.next-step h3 {
+  margin: 0 0 7px;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.next-step p {
+  margin: 0;
+  color: #7b8794;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+/* =========================
+   BUTTON
+========================= */
+
+.submit-login-button {
+  width: 100%;
+  height: 48px;
+  margin-top: 25px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgb(13, 136, 237);
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 650;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.submit-login-button:hover {
+  background: #173f5f;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(16, 42, 67, 0.18);
+}
+
+.submit-login-button span:last-child {
+  font-size: 18px;
+}
+
+.submit-note {
+  margin: 14px 0 0;
+  color: #a0aab5;
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 900px) {
+  .registration-submit-page {
+    padding: 20px;
+  }
+
+  .registration-submit-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .registration-submit-brand {
+    display: none;
+  }
+
+  .registration-submit-content {
+    min-height: 700px;
+    padding: 40px 28px;
+  }
+}
+
+@media (max-width: 520px) {
+  .registration-submit-page {
+    padding: 0;
+    background: #ffffff;
+  }
+
+  .registration-submit-shell {
+    min-height: 100vh;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .registration-submit-content {
+    padding: 35px 22px;
+  }
+
+  .registration-submit-card h1 {
+    font-size: 29px;
+  }
+
+  .detail-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .detail-row strong {
+    text-align: left;
+  }
+}

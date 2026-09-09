@@ -1,0 +1,181 @@
+CREATE DATABASE IF NOT EXISTS student_management
+  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE student_management;
+
+CREATE TABLE IF NOT EXISTS users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(120) NOT NULL,
+  email VARCHAR(190) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  role ENUM('ADMIN','TEACHER','STUDENT') NOT NULL DEFAULT 'STUDENT',
+  status ENUM('ACTIVE','INACTIVE','PENDING','REJECTED') NOT NULL DEFAULT 'ACTIVE',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_users_role (role),
+  INDEX idx_users_status (status)
+);
+
+CREATE TABLE IF NOT EXISTS departments (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(120) NOT NULL UNIQUE,
+  code VARCHAR(30) NOT NULL UNIQUE,
+  description TEXT,
+  status ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS programs (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  department_id INT NOT NULL,
+  name VARCHAR(150) NOT NULL,
+  code VARCHAR(40) NOT NULL UNIQUE,
+  duration_years DECIMAL(3,1) DEFAULT 4,
+  status ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE',
+  FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE RESTRICT,
+  INDEX idx_program_department (department_id)
+);
+
+CREATE TABLE IF NOT EXISTS students (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NULL UNIQUE,
+  student_id VARCHAR(40) NOT NULL UNIQUE,
+  admission_number VARCHAR(50) NOT NULL UNIQUE,
+  first_name VARCHAR(80) NOT NULL,
+  last_name VARCHAR(80) NOT NULL,
+  gender ENUM('MALE','FEMALE','OTHER') NOT NULL,
+  date_of_birth DATE NULL,
+  email VARCHAR(190),
+  phone VARCHAR(40),
+  address VARCHAR(255),
+  guardian_name VARCHAR(150),
+  guardian_phone VARCHAR(40),
+  department_id INT NOT NULL,
+  program_id INT NOT NULL,
+  year_level INT NOT NULL DEFAULT 1,
+  semester INT NOT NULL DEFAULT 1,
+  admission_date DATE NOT NULL,
+  status ENUM('ACTIVE','INACTIVE','GRADUATED','SUSPENDED') NOT NULL DEFAULT 'ACTIVE',
+  notes TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE RESTRICT,
+  FOREIGN KEY (program_id) REFERENCES programs(id) ON DELETE RESTRICT,
+  INDEX idx_students_name (last_name, first_name),
+  INDEX idx_students_department (department_id),
+  INDEX idx_students_status (status)
+);
+
+CREATE TABLE IF NOT EXISTS teachers (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NULL UNIQUE,
+  employee_id VARCHAR(40) NOT NULL UNIQUE,
+  first_name VARCHAR(80) NOT NULL,
+  last_name VARCHAR(80) NOT NULL,
+  email VARCHAR(190),
+  phone VARCHAR(40),
+  department_id INT NOT NULL,
+  specialization VARCHAR(150),
+  status ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE RESTRICT
+);
+
+CREATE TABLE IF NOT EXISTS courses (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  department_id INT NOT NULL,
+  teacher_id INT NULL,
+  code VARCHAR(30) NOT NULL UNIQUE,
+  title VARCHAR(150) NOT NULL,
+  credit_hours INT NOT NULL DEFAULT 3,
+  semester INT NOT NULL DEFAULT 1,
+  prerequisites VARCHAR(255),
+  status ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE RESTRICT,
+  FOREIGN KEY (teacher_id) REFERENCES teachers(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS enrollments (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  student_id INT NOT NULL,
+  course_id INT NOT NULL,
+  academic_year VARCHAR(20) NOT NULL,
+  semester INT NOT NULL,
+  status ENUM('ENROLLED','DROPPED','COMPLETED') NOT NULL DEFAULT 'ENROLLED',
+  enrolled_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_enrollment (student_id, course_id, academic_year, semester),
+  FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+  FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS attendance (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  enrollment_id INT NOT NULL,
+  attendance_date DATE NOT NULL,
+  status ENUM('PRESENT','ABSENT','LATE','EXCUSED') NOT NULL,
+  notes VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_attendance (enrollment_id, attendance_date),
+  FOREIGN KEY (enrollment_id) REFERENCES enrollments(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS grades (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  enrollment_id INT NOT NULL,
+  assessment VARCHAR(100) NOT NULL,
+  score DECIMAL(5,2) NOT NULL,
+  max_score DECIMAL(5,2) NOT NULL DEFAULT 100,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_grade (enrollment_id, assessment),
+  FOREIGN KEY (enrollment_id) REFERENCES enrollments(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS fees (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  student_id INT NOT NULL,
+  description VARCHAR(180) NOT NULL,
+  amount DECIMAL(12,2) NOT NULL,
+  amount_paid DECIMAL(12,2) NOT NULL DEFAULT 0,
+  due_date DATE,
+  status ENUM('UNPAID','PARTIAL','PAID','OVERDUE') NOT NULL DEFAULT 'UNPAID',
+  payment_date DATE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS timetable (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  course_id INT NOT NULL,
+  teacher_id INT NULL,
+  room VARCHAR(80) NOT NULL,
+  day_of_week ENUM('MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY') NOT NULL,
+  start_time TIME NOT NULL,
+  end_time TIME NOT NULL,
+  FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+  FOREIGN KEY (teacher_id) REFERENCES teachers(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS announcements (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(180) NOT NULL,
+  message TEXT NOT NULL,
+  target_role ENUM('ALL','ADMIN','TEACHER','STUDENT') DEFAULT 'ALL',
+  created_by INT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS activity_logs (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NULL,
+  action VARCHAR(80) NOT NULL,
+  entity VARCHAR(80) NOT NULL,
+  entity_id INT NULL,
+  details TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_activity_created (created_at)
+);
