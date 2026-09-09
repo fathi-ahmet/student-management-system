@@ -1654,6 +1654,27 @@ app.get(
   }),
 );
 
+async function teacherOwnsGrade(req, gradeId) {
+  if (req.user.role !== "TEACHER") {
+    return true;
+  }
+
+  const rows = await query(
+    `
+    SELECT g.id
+    FROM grades g
+    JOIN enrollments e ON e.id = g.enrollment_id
+    JOIN courses c ON c.id = e.course_id
+    JOIN teachers t ON t.id = c.teacher_id
+    WHERE g.id = ? AND t.user_id = ?
+    LIMIT 1
+    `,
+    [gradeId, req.user.id],
+  );
+
+  return rows.length > 0;
+}
+
 app.post(
   "/api/grades",
   authRequired,
