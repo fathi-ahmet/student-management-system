@@ -1714,6 +1714,15 @@ app.put(
   authRequired,
   allow("ADMIN", "TEACHER"),
   asyncRoute(async (req, res) => {
+    if (req.user.role === "TEACHER") {
+      const ownsGrade = await teacherOwnsGrade(req, req.params.id);
+
+      if (!ownsGrade) {
+        return res.status(403).json({
+          message: "You can only modify grades for your own courses.",
+        });
+      }
+    }
     const { enrollment_id, assessment, score, max_score = 100 } = req.body;
 
     await query(
