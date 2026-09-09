@@ -1681,6 +1681,25 @@ app.post(
   allow("ADMIN", "TEACHER"),
   asyncRoute(async (req, res) => {
     const { enrollment_id, assessment, score, max_score = 100 } = req.body;
+    if (req.user.role === "TEACHER") {
+      const teacherRows = await query(
+        `
+        SELECT e.id
+        FROM enrollments e
+        JOIN courses c ON c.id = e.course_id
+        JOIN teachers t ON t.id = c.teacher_id
+        WHERE e.id = ? AND t.user_id = ?
+        LIMIT 1
+        `,
+        [enrollment_id, req.user.id],
+      );
+
+      if (teacherRows.length === 0) {
+        return res.status(403).json({
+          message: "You can only record grades for your own courses.",
+        });
+      }
+    }
     const r = await query(
       "INSERT INTO grades(enrollment_id,assessment,score,max_score) VALUES(?,?,?,?)",
       [enrollment_id, assessment, score, max_score],
