@@ -1748,6 +1748,15 @@ app.delete(
   authRequired,
   allow("ADMIN", "TEACHER"),
   asyncRoute(async (req, res) => {
+    if (req.user.role === "TEACHER") {
+      const ownsGrade = await teacherOwnsGrade(req, req.params.id);
+
+      if (!ownsGrade) {
+        return res.status(403).json({
+          message: "You can only modify grades for your own courses.",
+        });
+      }
+    }
     await query("DELETE FROM grades WHERE id=?", [req.params.id]);
     res.status(204).send();
   }),
