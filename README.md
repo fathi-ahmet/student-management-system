@@ -108,7 +108,7 @@ StudentHub is a web-based **Student Management System** designed to help educati
 ## Project Structure
 
 ```text
-student-system/
+student-management-system/
 │
 ├── client/
 │   ├── src/
@@ -165,8 +165,8 @@ npm --version
 ## 1. Clone the Repository
 
 ```bash
-git clone https://github.com/barkhad-olaad/student-system.git
-cd student-system
+git clone https://github.com/fathiahmet/student-management-system.git
+cd student-management-system
 ```
 
 ---
@@ -447,6 +447,6 @@ This project is currently being developed as an educational/software engineering
 
 ## Author
 
-**Barkhad Olaad**
+**Fathi Ahmed**
 
-GitHub: [@barkhad-olaad](https://github.com/barkhad-olaad)
+GitHub: [@fathiahmet](https://github.com/fathiahmet)
