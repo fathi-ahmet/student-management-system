@@ -1635,10 +1635,10 @@ app.get(
           e.student_id,
           CONCAT(s.first_name, ' ', s.last_name) AS student_name,
           c.code AS course_code
-        FROM grades g
-        JOIN enrollments e ON e.id = g.enrollment_id
-        JOIN students s ON s.id = e.student_id
-        JOIN courses c ON c.id = e.course_id
+          FROM grades g
+JOIN enrollments e ON e.id = g.enrollment_id
+JOIN students s ON s.id = e.student_id
+JOIN courses c ON c.id = e.course_id
       `;
 
     const params = [];
@@ -1646,8 +1646,14 @@ app.get(
     // Students can only see their own grades
     if (req.user.role === "STUDENT") {
       sql += `
-          WHERE s.user_id = ?
-        `;
+        WHERE s.user_id = ?
+      `;
+      params.push(req.user.id);
+    } else if (req.user.role === "TEACHER") {
+      sql += `
+        JOIN teachers t ON t.id = c.teacher_id
+        WHERE t.user_id = ?
+      `;
       params.push(req.user.id);
     }
 
