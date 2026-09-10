@@ -1498,23 +1498,14 @@ app.get(
         `;
       params.push(req.user.id);
     } else if (req.user.role === "TEACHER") {
-      // Teachers can see attendance for their own courses
-      const teacherRows = await query(
-        `
-        SELECT a.*
-        FROM attendance a
-        JOIN enrollments e ON e.id = a.enrollment_id
-        JOIN courses c ON c.id = e.course_id
+      // Teachers can only see attendance for their own courses
+      sql += `
         JOIN teachers t ON t.id = c.teacher_id
         WHERE t.user_id = ?
-        ORDER BY a.attendance_date DESC
-        `,
-        [req.user.id],
-      );
+      `;
 
-      return res.json(teacherRows);
+      params.push(req.user.id);
     }
-
     sql += `
         ORDER BY a.attendance_date DESC
       `;
