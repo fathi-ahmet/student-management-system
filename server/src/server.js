@@ -1181,7 +1181,31 @@ for (const [resource, cfg] of Object.entries(resourceConfig)) {
         });
       }
 
-      const rows = await query(cfg.select);
+      let rows;
+
+      if (resource === "courses" && role === "TEACHER") {
+        rows = await query(
+          `
+    SELECT
+      c.*,
+      d.name AS department_name,
+      CONCAT(
+        COALESCE(t.first_name, ''),
+        ' ',
+        COALESCE(t.last_name, '')
+      ) AS teacher_name
+    FROM courses c
+    JOIN departments d ON d.id = c.department_id
+    JOIN teachers t ON t.id = c.teacher_id
+    WHERE t.user_id = ?
+    ORDER BY c.code
+    `,
+          [req.user.id],
+        );
+      } else {
+        rows = await query(cfg.select);
+      }
+
       res.json(rows);
     }),
   );
