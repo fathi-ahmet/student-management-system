@@ -1180,26 +1180,46 @@ for (const [resource, cfg] of Object.entries(resourceConfig)) {
           message: "You do not have permission to access this resource.",
         });
       }
-
       let rows;
 
       if (resource === "courses" && role === "TEACHER") {
         rows = await query(
           `
-    SELECT
-      c.*,
-      d.name AS department_name,
-      CONCAT(
-        COALESCE(t.first_name, ''),
-        ' ',
-        COALESCE(t.last_name, '')
-      ) AS teacher_name
-    FROM courses c
-    JOIN departments d ON d.id = c.department_id
-    JOIN teachers t ON t.id = c.teacher_id
-    WHERE t.user_id = ?
-    ORDER BY c.code
-    `,
+          SELECT
+            c.*,
+            d.name AS department_name,
+            CONCAT(
+              COALESCE(t.first_name, ''),
+              ' ',
+              COALESCE(t.last_name, '')
+            ) AS teacher_name
+          FROM courses c
+          JOIN departments d ON d.id = c.department_id
+          JOIN teachers t ON t.id = c.teacher_id
+          WHERE t.user_id = ?
+          ORDER BY c.code
+          `,
+          [req.user.id],
+        );
+      } else if (resource === "students" && role === "TEACHER") {
+        rows = await query(
+          `
+          SELECT DISTINCT
+            s.*,
+            d.name AS department_name,
+            p.name AS program_name
+          FROM students s
+          JOIN users u ON u.id = s.user_id
+          JOIN departments d ON d.id = s.department_id
+          JOIN programs p ON p.id = s.program_id
+          JOIN enrollments e ON e.student_id = s.id
+          JOIN courses c ON c.id = e.course_id
+          JOIN teachers t ON t.id = c.teacher_id
+          WHERE u.status = 'ACTIVE'
+            AND s.status = 'ACTIVE'
+            AND t.user_id = ?
+          ORDER BY s.created_at DESC
+          `,
           [req.user.id],
         );
       } else {
