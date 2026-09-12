@@ -1180,6 +1180,7 @@ for (const [resource, cfg] of Object.entries(resourceConfig)) {
           message: "You do not have permission to access this resource.",
         });
       }
+
       let rows;
 
       if (resource === "courses" && role === "TEACHER") {
@@ -1219,6 +1220,41 @@ for (const [resource, cfg] of Object.entries(resourceConfig)) {
             AND s.status = 'ACTIVE'
             AND t.user_id = ?
           ORDER BY s.created_at DESC
+          `,
+          [req.user.id],
+        );
+      } else if (resource === "timetable" && role === "STUDENT") {
+        rows = await query(
+          `
+          SELECT
+            tt.*,
+            c.code AS course_code,
+            c.title AS course_title,
+            CONCAT(
+              COALESCE(t.first_name, ''),
+              ' ',
+              COALESCE(t.last_name, '')
+            ) AS teacher_name
+          FROM timetable tt
+          JOIN courses c ON c.id = tt.course_id
+          LEFT JOIN teachers t ON t.id = tt.teacher_id
+          JOIN enrollments e ON e.course_id = c.id
+          JOIN students s ON s.id = e.student_id
+          JOIN users u ON u.id = s.user_id
+          WHERE u.id = ?
+            AND u.status = 'ACTIVE'
+            AND s.status = 'ACTIVE'
+          ORDER BY
+            FIELD(
+              tt.day_of_week,
+              'MONDAY',
+              'TUESDAY',
+              'WEDNESDAY',
+              'THURSDAY',
+              'FRIDAY',
+              'SATURDAY'
+            ),
+            tt.start_time
           `,
           [req.user.id],
         );
