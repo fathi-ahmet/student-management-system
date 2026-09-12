@@ -1258,6 +1258,36 @@ for (const [resource, cfg] of Object.entries(resourceConfig)) {
           `,
           [req.user.id],
         );
+      } else if (resource === "timetable" && role === "TEACHER") {
+        rows = await query(
+          `
+        SELECT
+          tt.*,
+          c.code AS course_code,
+          c.title AS course_title,
+          CONCAT(
+            COALESCE(t.first_name, ''),
+            ' ',
+            COALESCE(t.last_name, '')
+          ) AS teacher_name
+        FROM timetable tt
+        JOIN courses c ON c.id = tt.course_id
+        JOIN teachers t ON t.id = c.teacher_id
+        WHERE t.user_id = ?
+        ORDER BY
+          FIELD(
+            tt.day_of_week,
+            'MONDAY',
+            'TUESDAY',
+            'WEDNESDAY',
+            'THURSDAY',
+            'FRIDAY',
+            'SATURDAY'
+          ),
+          tt.start_time
+        `,
+          [req.user.id],
+        );
       } else {
         rows = await query(cfg.select);
       }
