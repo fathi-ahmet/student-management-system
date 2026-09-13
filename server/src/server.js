@@ -1288,6 +1288,23 @@ for (const [resource, cfg] of Object.entries(resourceConfig)) {
         `,
           [req.user.id],
         );
+      } else if (
+        resource === "announcements" &&
+        (role === "STUDENT" || role === "TEACHER")
+      ) {
+        rows = await query(
+          `
+          SELECT
+            a.*,
+            u.name AS created_by_name
+          FROM announcements a
+          LEFT JOIN users u ON u.id = a.created_by
+          WHERE a.target_role = ?
+             OR a.target_role = 'ALL'
+          ORDER BY a.created_at DESC
+          `,
+          [role],
+        );
       } else {
         rows = await query(cfg.select);
       }
