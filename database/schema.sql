@@ -1,5 +1,7 @@
 CREATE DATABASE IF NOT EXISTS student_management
-  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
 USE student_management;
 
 CREATE TABLE IF NOT EXISTS users (
@@ -7,33 +9,43 @@ CREATE TABLE IF NOT EXISTS users (
   name VARCHAR(120) NOT NULL,
   email VARCHAR(190) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
-  role ENUM('ADMIN','TEACHER','STUDENT') NOT NULL DEFAULT 'STUDENT',
-  status ENUM('ACTIVE','INACTIVE','PENDING','REJECTED') NOT NULL DEFAULT 'ACTIVE',
+  role ENUM('ADMIN','TEACHER','STUDENT')
+    NOT NULL DEFAULT 'STUDENT',
+  status ENUM('ACTIVE','INACTIVE','PENDING','REJECTED')
+    NOT NULL DEFAULT 'ACTIVE',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_users_role (role),
   INDEX idx_users_status (status)
-);
+) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS departments (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(120) NOT NULL UNIQUE,
   code VARCHAR(30) NOT NULL UNIQUE,
   description TEXT,
-  status ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+  status ENUM('ACTIVE','INACTIVE')
+    NOT NULL DEFAULT 'ACTIVE',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_departments_status (status)
+) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS programs (
   id INT AUTO_INCREMENT PRIMARY KEY,
   department_id INT NOT NULL,
   name VARCHAR(150) NOT NULL,
   code VARCHAR(40) NOT NULL UNIQUE,
-  duration_years DECIMAL(3,1) DEFAULT 4,
-  status ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE',
-  FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE RESTRICT,
-  INDEX idx_program_department (department_id)
-);
+  duration_years DECIMAL(3,1) NOT NULL DEFAULT 4.0,
+  status ENUM('ACTIVE','INACTIVE')
+    NOT NULL DEFAULT 'ACTIVE',
+  FOREIGN KEY (department_id)
+    REFERENCES departments(id)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+  INDEX idx_programs_department (department_id),
+  INDEX idx_programs_status (status)
+) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS students (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -42,7 +54,7 @@ CREATE TABLE IF NOT EXISTS students (
   admission_number VARCHAR(50) NOT NULL UNIQUE,
   first_name VARCHAR(80) NOT NULL,
   last_name VARCHAR(80) NOT NULL,
-  gender ENUM('MALE','FEMALE','OTHER') NOT NULL,
+  gender ENUM('MALE','FEMALE') NOT NULL,
   date_of_birth DATE NULL,
   email VARCHAR(190),
   phone VARCHAR(40),
@@ -54,17 +66,33 @@ CREATE TABLE IF NOT EXISTS students (
   year_level INT NOT NULL DEFAULT 1,
   semester INT NOT NULL DEFAULT 1,
   admission_date DATE NOT NULL,
-  status ENUM('ACTIVE','INACTIVE','GRADUATED','SUSPENDED') NOT NULL DEFAULT 'ACTIVE',
+  status ENUM(
+    'ACTIVE',
+    'INACTIVE',
+    'GRADUATED',
+    'SUSPENDED'
+  ) NOT NULL DEFAULT 'ACTIVE',
   notes TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
-  FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE RESTRICT,
-  FOREIGN KEY (program_id) REFERENCES programs(id) ON DELETE RESTRICT,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id)
+    REFERENCES users(id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+  FOREIGN KEY (department_id)
+    REFERENCES departments(id)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+  FOREIGN KEY (program_id)
+    REFERENCES programs(id)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
   INDEX idx_students_name (last_name, first_name),
   INDEX idx_students_department (department_id),
+  INDEX idx_students_program (program_id),
   INDEX idx_students_status (status)
-);
+) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS teachers (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -76,11 +104,20 @@ CREATE TABLE IF NOT EXISTS teachers (
   phone VARCHAR(40),
   department_id INT NOT NULL,
   specialization VARCHAR(150),
-  status ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE',
+  status ENUM('ACTIVE','INACTIVE')
+    NOT NULL DEFAULT 'ACTIVE',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
-  FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE RESTRICT
-);
+  FOREIGN KEY (user_id)
+    REFERENCES users(id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+  FOREIGN KEY (department_id)
+    REFERENCES departments(id)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+  INDEX idx_teachers_department (department_id),
+  INDEX idx_teachers_status (status)
+) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS courses (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -91,11 +128,21 @@ CREATE TABLE IF NOT EXISTS courses (
   credit_hours INT NOT NULL DEFAULT 3,
   semester INT NOT NULL DEFAULT 1,
   prerequisites VARCHAR(255),
-  status ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE',
+  status ENUM('ACTIVE','INACTIVE')
+    NOT NULL DEFAULT 'ACTIVE',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE RESTRICT,
-  FOREIGN KEY (teacher_id) REFERENCES teachers(id) ON DELETE SET NULL
-);
+  FOREIGN KEY (department_id)
+    REFERENCES departments(id)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+  FOREIGN KEY (teacher_id)
+    REFERENCES teachers(id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+  INDEX idx_courses_department (department_id),
+  INDEX idx_courses_teacher (teacher_id),
+  INDEX idx_courses_status (status)
+) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS enrollments (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -103,35 +150,82 @@ CREATE TABLE IF NOT EXISTS enrollments (
   course_id INT NOT NULL,
   academic_year VARCHAR(20) NOT NULL,
   semester INT NOT NULL,
-  status ENUM('ENROLLED','DROPPED','COMPLETED') NOT NULL DEFAULT 'ENROLLED',
+  status ENUM(
+    'ENROLLED',
+    'DROPPED',
+    'COMPLETED'
+  ) NOT NULL DEFAULT 'ENROLLED',
   enrolled_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE KEY uq_enrollment (student_id, course_id, academic_year, semester),
-  FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
-  FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
-);
+  UNIQUE KEY uq_enrollment (
+    student_id,
+    course_id,
+    academic_year,
+    semester
+  ),
+  FOREIGN KEY (student_id)
+    REFERENCES students(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  FOREIGN KEY (course_id)
+    REFERENCES courses(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  INDEX idx_enrollments_student (student_id),
+  INDEX idx_enrollments_course (course_id),
+  INDEX idx_enrollments_status (status)
+) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS attendance (
   id INT AUTO_INCREMENT PRIMARY KEY,
   enrollment_id INT NOT NULL,
   attendance_date DATE NOT NULL,
-  status ENUM('PRESENT','ABSENT','LATE','EXCUSED') NOT NULL,
+  status ENUM(
+    'PRESENT',
+    'ABSENT',
+    'LATE',
+    'EXCUSED'
+  ) NOT NULL,
   notes VARCHAR(255),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE KEY uq_attendance (enrollment_id, attendance_date),
-  FOREIGN KEY (enrollment_id) REFERENCES enrollments(id) ON DELETE CASCADE
-);
+  UNIQUE KEY uq_attendance (
+    enrollment_id,
+    attendance_date
+  ),
+  FOREIGN KEY (enrollment_id)
+    REFERENCES enrollments(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  INDEX idx_attendance_enrollment (enrollment_id),
+  INDEX idx_attendance_date (attendance_date),
+  INDEX idx_attendance_status (status)
+) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS grades (
   id INT AUTO_INCREMENT PRIMARY KEY,
   enrollment_id INT NOT NULL,
-  assessment VARCHAR(100) NOT NULL,
+  assessment ENUM(
+    'Mid Exam',
+    'Final Exam',
+    'Assignment',
+    'Quiz',
+    'Project'
+  ) NOT NULL,
   score DECIMAL(5,2) NOT NULL,
   max_score DECIMAL(5,2) NOT NULL DEFAULT 100,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  UNIQUE KEY uq_grade (enrollment_id, assessment),
-  FOREIGN KEY (enrollment_id) REFERENCES enrollments(id) ON DELETE CASCADE
-);
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_grade (
+    enrollment_id,
+    assessment
+  ),
+  FOREIGN KEY (enrollment_id)
+    REFERENCES enrollments(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  INDEX idx_grades_enrollment (enrollment_id),
+  INDEX idx_grades_assessment (assessment)
+) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS fees (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -140,33 +234,70 @@ CREATE TABLE IF NOT EXISTS fees (
   amount DECIMAL(12,2) NOT NULL,
   amount_paid DECIMAL(12,2) NOT NULL DEFAULT 0,
   due_date DATE,
-  status ENUM('UNPAID','PARTIAL','PAID','OVERDUE') NOT NULL DEFAULT 'UNPAID',
+  status ENUM(
+    'UNPAID',
+    'PARTIAL',
+    'PAID',
+    'OVERDUE'
+  ) NOT NULL DEFAULT 'UNPAID',
   payment_date DATE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
-);
+  FOREIGN KEY (student_id)
+    REFERENCES students(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  INDEX idx_fees_student (student_id),
+  INDEX idx_fees_status (status),
+  INDEX idx_fees_due_date (due_date)
+) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS timetable (
   id INT AUTO_INCREMENT PRIMARY KEY,
   course_id INT NOT NULL,
   teacher_id INT NULL,
   room VARCHAR(80) NOT NULL,
-  day_of_week ENUM('MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY') NOT NULL,
+  day_of_week ENUM(
+    'MONDAY',
+    'TUESDAY',
+    'WEDNESDAY',
+    'THURSDAY',
+    'FRIDAY',
+    'SATURDAY'
+  ) NOT NULL,
   start_time TIME NOT NULL,
   end_time TIME NOT NULL,
-  FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
-  FOREIGN KEY (teacher_id) REFERENCES teachers(id) ON DELETE SET NULL
-);
+  FOREIGN KEY (course_id)
+    REFERENCES courses(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  FOREIGN KEY (teacher_id)
+    REFERENCES teachers(id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+  INDEX idx_timetable_course (course_id),
+  INDEX idx_timetable_teacher (teacher_id),
+  INDEX idx_timetable_day (day_of_week)
+) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS announcements (
   id INT AUTO_INCREMENT PRIMARY KEY,
   title VARCHAR(180) NOT NULL,
   message TEXT NOT NULL,
-  target_role ENUM('ALL','ADMIN','TEACHER','STUDENT') DEFAULT 'ALL',
+  target_role ENUM(
+    'ALL',
+    'ADMIN',
+    'TEACHER',
+    'STUDENT'
+  ) DEFAULT 'ALL',
   created_by INT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
-);
+  FOREIGN KEY (created_by)
+    REFERENCES users(id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+  INDEX idx_announcements_target (target_role),
+  INDEX idx_announcements_created (created_at)
+) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS activity_logs (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -176,6 +307,11 @@ CREATE TABLE IF NOT EXISTS activity_logs (
   entity_id INT NULL,
   details TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (user_id)
+    REFERENCES users(id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+  INDEX idx_activity_user (user_id),
+  INDEX idx_activity_entity (entity, entity_id),
   INDEX idx_activity_created (created_at)
-);
+) ENGINE=InnoDB;
