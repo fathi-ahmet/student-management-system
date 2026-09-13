@@ -1,7 +1,7 @@
 USE student_management;
 
 INSERT IGNORE INTO departments (id,name,code,description) VALUES
-(1,'Computer Science','CS','Computing and software systems'),
+(1,'Computing school','CS','Computing and software systems'),
 (2,'Business Administration','BA','Business and management studies'),
 (3,'Information Technology','IT','Information technology and systems');
 
@@ -13,7 +13,7 @@ INSERT IGNORE INTO programs (id,department_id,name,code,duration_years) VALUES
 
 -- $2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llCw9gJqH5gR9f8Q3Gv5K
 INSERT IGNORE INTO users (id,name,email,password_hash,role) VALUES
-(1,'System Administrator','admin@example.com','$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llCw9gJqH5gR9f8Q3Gv5K','ADMIN'),
+(1,'Fathi Ahmed','admin@example.com','$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llCw9gJqH5gR9f8Q3Gv5K','ADMIN'),
 (3,'Barkhad Teacher','barkhad@example.com','$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llCw9gJqH5gR9f8Q3Gv5K','TEACHER'),
 (4,'Abdiqani Student','student@example.com','$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llCw9gJqH5gR9f8Q3Gv5K','STUDENT');
 
