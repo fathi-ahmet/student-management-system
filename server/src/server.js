@@ -220,7 +220,6 @@ app.post(
 
       // REJECTED accounts will be handled by the resubmission flow.
     }
-
     // =========================
     // START TRANSACTION
     // =========================
@@ -231,15 +230,170 @@ app.post(
       await connection.beginTransaction();
 
       // =========================
-      // CREATE USER ACCOUNT
+      // RESUBMIT REJECTED ACCOUNT
+      // =========================
+
+      if (existingUser && existingUser.status === "REJECTED") {
+        // A rejected account must keep the same role.
+        if (existingUser.role !== role) {
+          await connection.rollback();
+
+          return res.status(409).json({
+            message: `This email is already registered as a ${existingUser.role.toLowerCase()} account.`,
+          });
+        }
+
+        // Hash the new password.
+        const passwordHash = await bcrypt.hash(password, 10);
+
+        // Move the existing account back to PENDING.
+        await connection.execute(
+          `
+          UPDATE users
+          SET
+            name = ?,
+            password_hash = ?,
+            role = ?,
+            status = 'PENDING'
+          WHERE id = ?
+          `,
+          [
+            `${first_name.trim()} ${last_name.trim()}`,
+            passwordHash,
+            role,
+            existingUser.id,
+          ],
+        );
+
+        // =========================
+        // UPDATE EXISTING STUDENT
+        // =========================
+
+        if (role === "STUDENT") {
+          const [studentRows] = await connection.execute(
+            `
+            SELECT id, student_id
+            FROM students
+            WHERE user_id = ?
+            LIMIT 1
+            `,
+            [existingUser.id],
+          );
+
+          if (studentRows.length === 0) {
+            throw new Error(
+              "Rejected student account has no linked student profile.",
+            );
+          }
+
+          const student = studentRows[0];
+
+          await connection.execute(
+            `
+            UPDATE students
+            SET
+              first_name = ?,
+              last_name = ?,
+              gender = ?,
+              date_of_birth = ?,
+              email = ?,
+              phone = ?,
+              department_id = ?,
+              program_id = ?,
+              status = 'INACTIVE'
+            WHERE id = ?
+            `,
+            [
+              first_name.trim(),
+              last_name.trim(),
+              gender,
+              date_of_birth || null,
+              normalizedEmail,
+              phone?.trim() || null,
+              department_id,
+              program_id,
+              student.id,
+            ],
+          );
+
+          await connection.commit();
+
+          return res.status(201).json({
+            message:
+              "Student registration resubmitted successfully. Your account is waiting for administrator approval.",
+            applicationId: student.student_id,
+            status: "PENDING",
+          });
+        }
+
+        // =========================
+        // UPDATE EXISTING TEACHER
+        // =========================
+
+        const [teacherRows] = await connection.execute(
+          `
+          SELECT id, employee_id
+          FROM teachers
+          WHERE user_id = ?
+          LIMIT 1
+          `,
+          [existingUser.id],
+        );
+
+        if (teacherRows.length === 0) {
+          throw new Error(
+            "Rejected teacher account has no linked teacher profile.",
+          );
+        }
+
+        const teacher = teacherRows[0];
+
+        await connection.execute(
+          `
+          UPDATE teachers
+          SET
+            first_name = ?,
+            last_name = ?,
+            email = ?,
+            phone = ?,
+            department_id = ?,
+            specialization = ?,
+            status = 'INACTIVE'
+          WHERE id = ?
+          `,
+          [
+            first_name.trim(),
+            last_name.trim(),
+            normalizedEmail,
+            phone?.trim() || null,
+            department_id,
+            specialization.trim(),
+            teacher.id,
+          ],
+        );
+
+        await connection.commit();
+
+        return res.status(201).json({
+          message:
+            "Teacher registration resubmitted successfully. Your account is waiting for administrator approval.",
+          applicationId: teacher.employee_id,
+          status: "PENDING",
+        });
+      }
+
+      // =========================
+      // CREATE NEW USER ACCOUNT
       // =========================
 
       const passwordHash = await bcrypt.hash(password, 10);
 
       const userResult = await connection.execute(
-        `INSERT INTO users
+        `
+        INSERT INTO users
           (name, email, password_hash, role, status)
-         VALUES (?, ?, ?, ?, 'PENDING')`,
+        VALUES (?, ?, ?, ?, 'PENDING')
+        `,
         [
           `${first_name.trim()} ${last_name.trim()}`,
           normalizedEmail,
@@ -256,25 +410,27 @@ app.post(
 
       if (role === "STUDENT") {
         const studentResult = await connection.execute(
-          `INSERT INTO students
-            (
-              user_id,
-              student_id,
-              admission_number,
-              first_name,
-              last_name,
-              gender,
-              date_of_birth,
-              email,
-              phone,
-              department_id,
-              program_id,
-              year_level,
-              semester,
-              admission_date,
-              status
-            )
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1, CURDATE(), 'INACTIVE')`,
+          `
+          INSERT INTO students
+          (
+            user_id,
+            student_id,
+            admission_number,
+            first_name,
+            last_name,
+            gender,
+            date_of_birth,
+            email,
+            phone,
+            department_id,
+            program_id,
+            year_level,
+            semester,
+            admission_date,
+            status
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1, CURDATE(), 'INACTIVE')
+          `,
           [
             userId,
             `STU-PENDING-${userId}`,
@@ -292,15 +448,17 @@ app.post(
 
         const studentId = studentResult[0].insertId;
 
-        // Generate permanent institutional IDs
+        // Generate permanent institutional IDs.
         const generatedStudentId = `STU-${new Date().getFullYear()}-${String(studentId).padStart(3, "0")}`;
 
         const generatedAdmissionNumber = `ADM-${new Date().getFullYear()}-${String(studentId).padStart(3, "0")}`;
 
         await connection.execute(
-          `UPDATE students
-           SET student_id=?, admission_number=?
-           WHERE id=?`,
+          `
+          UPDATE students
+          SET student_id = ?, admission_number = ?
+          WHERE id = ?
+          `,
           [generatedStudentId, generatedAdmissionNumber, studentId],
         );
 
@@ -319,19 +477,21 @@ app.post(
       // =========================
 
       const teacherResult = await connection.execute(
-        `INSERT INTO teachers
-          (
-            user_id,
-            employee_id,
-            first_name,
-            last_name,
-            email,
-            phone,
-            department_id,
-            specialization,
-            status
-          )
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'INACTIVE')`,
+        `
+        INSERT INTO teachers
+        (
+          user_id,
+          employee_id,
+          first_name,
+          last_name,
+          email,
+          phone,
+          department_id,
+          specialization,
+          status
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'INACTIVE')
+        `,
         [
           userId,
           `EMP-PENDING-${userId}`,
@@ -346,13 +506,15 @@ app.post(
 
       const teacherId = teacherResult[0].insertId;
 
-      // Generate permanent employee ID
+      // Generate permanent employee ID.
       const generatedEmployeeId = `EMP-${new Date().getFullYear()}-${String(teacherId).padStart(3, "0")}`;
 
       await connection.execute(
-        `UPDATE teachers
-         SET employee_id=?
-         WHERE id=?`,
+        `
+        UPDATE teachers
+        SET employee_id = ?
+        WHERE id = ?
+        `,
         [generatedEmployeeId, teacherId],
       );
 
