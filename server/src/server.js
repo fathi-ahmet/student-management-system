@@ -2201,6 +2201,115 @@ app.delete(
 );
 
 app.get(
+  "/api/gpa",
+  authRequired,
+  asyncRoute(async (req, res) => {
+    let sql = `
+      SELECT
+        e.id AS enrollment_id,
+        e.student_id,
+        e.academic_year,
+        e.semester,
+        c.code AS course_code,
+        c.title AS course_title,
+        c.credit_hours,
+        AVG(
+          CASE
+            WHEN g.max_score > 0
+            THEN (g.score / g.max_score) * 100
+            ELSE NULL
+          END
+        ) AS course_percentage
+      FROM enrollments e
+      JOIN courses c ON c.id = e.course_id
+      JOIN grades g ON g.enrollment_id = e.id
+      JOIN students s ON s.id = e.student_id
+    `;
+
+    const params = [];
+
+    // Students can only see their own GPA
+    if (req.user.role === "STUDENT") {
+      sql += `
+        WHERE s.user_id = ?
+      `;
+      params.push(req.user.id);
+    }
+
+    sql += `
+      GROUP BY
+        e.id,
+        e.student_id,
+        e.academic_year,
+        e.semester,
+        c.code,
+        c.title,
+        c.credit_hours
+      ORDER BY
+        e.academic_year DESC,
+        e.semester DESC,
+        c.code ASC
+    `;
+
+    const rows = await query(sql, params);
+
+    let totalQualityPoints = 0;
+    let totalCreditHours = 0;
+
+    const courses = rows.map(row => {
+      const percentage = Number(row.course_percentage);
+
+      let gradeLetter;
+      let gradePoint;
+
+      if (percentage >= 90) {
+        gradeLetter = "A";
+        gradePoint = 4.0;
+      } else if (percentage >= 80) {
+        gradeLetter = "B";
+        gradePoint = 3.0;
+      } else if (percentage >= 70) {
+        gradeLetter = "C";
+        gradePoint = 2.0;
+      } else if (percentage >= 60) {
+        gradeLetter = "D";
+        gradePoint = 1.0;
+      } else {
+        gradeLetter = "F";
+        gradePoint = 0.0;
+      }
+
+      const creditHours = Number(row.credit_hours);
+
+      totalQualityPoints += gradePoint * creditHours;
+      totalCreditHours += creditHours;
+
+      return {
+        enrollment_id: row.enrollment_id,
+        student_id: row.student_id,
+        academic_year: row.academic_year,
+        semester: row.semester,
+        course_code: row.course_code,
+        course_title: row.course_title,
+        credit_hours: creditHours,
+        percentage: Number(percentage.toFixed(2)),
+        grade_letter: gradeLetter,
+        grade_point: gradePoint,
+      };
+    });
+
+    const gpa =
+      totalCreditHours > 0 ? totalQualityPoints / totalCreditHours : 0;
+
+    res.json({
+      gpa: Number(gpa.toFixed(2)),
+      total_credit_hours: totalCreditHours,
+      courses,
+    });
+  }),
+);
+
+app.get(
   "/api/activity",
   authRequired,
   allow("ADMIN"),
