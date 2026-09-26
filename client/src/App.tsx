@@ -232,6 +232,7 @@ function Shell({ user, onLogout }: { user: User; onLogout: () => void }) {
                 />
               }
             />
+
             <Route
               path="/grades"
               element={
@@ -244,12 +245,14 @@ function Shell({ user, onLogout }: { user: User; onLogout: () => void }) {
                     "assessment",
                     "score",
                     "max_score",
+                    "grade_letter",
                   ]}
                   fields={gradeFields}
                   role={user.role}
                 />
               }
             />
+
             <Route
               path="/fees"
               element={
@@ -391,7 +394,6 @@ const gradeFields = [
   ],
   ["score", "Score", "number"],
   ["max_score", "Max Score", "number"],
-  ["grade_letter", "Grade Letter", "select:A+,A,A-,B+,B,B-,C+,C,C-,D,F,NG"],
 ] as const;
 
 const feeFields = [
