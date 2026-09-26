@@ -427,10 +427,22 @@ const announcementFields = [
 
 function Dashboard({ role }: { role: string }) {
   const [d, setD] = useState<any>(null);
+  const [gpa, setGpa] = useState<number | null>(null);
 
   useEffect(() => {
     get("/dashboard").then(setD).catch(console.error);
   }, []);
+
+  useEffect(() => {
+    if (role === "STUDENT") {
+      get("/gpa")
+        .then(data => setGpa(Number(data.gpa)))
+        .catch(error => {
+          console.error("Failed to load GPA:", error);
+          setGpa(null);
+        });
+    }
+  }, [role]);
 
   if (!d) {
     return (
@@ -456,6 +468,7 @@ function Dashboard({ role }: { role: string }) {
         WalletCards,
       ],
       ["Enrolled Courses", d.enrolledCourses, BookOpen],
+      ["GPA", gpa !== null ? gpa.toFixed(2) : "—", Award],
     ];
 
     return (
