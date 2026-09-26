@@ -2,7 +2,8 @@
 
 StudentHub is a web-based **Student Management System** designed to help educational institutions manage students, teachers, departments, programs, courses, enrollment, attendance, grades, fees, timetables, announcements, and user accounts.
 
-> 🚧 **StudentHub is currently under active development.** Some features are implemented, while others are planned for future releases.
+> 🚧 **StudentHub is currently under active development.**
+> Core management, authentication, registration, academic, and administrative features are implemented, while additional features are planned for future releases.
 
 ---
 
@@ -12,10 +13,12 @@ StudentHub is a web-based **Student Management System** designed to help educati
 
 - User registration
 - Administrator account approval
+- Registration status tracking
 - Role-based authentication
-- Secure password hashing
+- Secure password hashing with bcryptjs
 - JWT-based authentication
 - Account status management
+- Role-based access control
 
 ### 🛠️ Administration
 
@@ -33,6 +36,8 @@ StudentHub is a web-based **Student Management System** designed to help educati
 - Enrollment management
 - Attendance management
 - Grade management
+- Automatic grade-letter calculation
+- Credit-weighted GPA calculation on a 4.0 scale
 - Fee management
 - Timetable management
 - Announcements
@@ -42,8 +47,23 @@ StudentHub is a web-based **Student Management System** designed to help educati
 - Student dashboard
 - Student enrollment information
 - Academic information
+- Grade information
+- GPA display
 - Attendance information
+- Fee information
+- Timetable information
+- Announcements
 - Account management
+
+### 🔒 Security
+
+- JWT authentication
+- Password hashing
+- Protected API routes
+- Role-based authorization
+- Authenticated frontend requests
+- Account approval workflow
+- Audit/activity logging
 
 ---
 
@@ -51,31 +71,17 @@ StudentHub is a web-based **Student Management System** designed to help educati
 
 ### Login
 
-![StudentHub Login](screenshots/login.png)
-
 ### Registration
-
-![StudentHub Registration](screenshots/register.png)
 
 ### Admin Dashboard
 
-![StudentHub Admin Dashboard](screenshots/admin_dashboard.png)
-
 ### Account Approvals
-
-![StudentHub Account Approvals](screenshots/account_approvals.png)
 
 ### Student Management
 
-![StudentHub Student Management](screenshots/students.png)
-
 ### Enrollment
 
-![StudentHub Enrollment](screenshots/enrollments.png)
-
 ### Student Dashboard
-
-![StudentHub Student Dashboard](screenshots/student_dashboard.png)
 
 ---
 
@@ -92,9 +98,9 @@ StudentHub is a web-based **Student Management System** designed to help educati
 ### Backend
 
 - Node.js
-- Express
+- Express.js
 - JWT
-- bcrypt
+- bcryptjs
 - CORS
 - MySQL2
 
@@ -166,6 +172,7 @@ npm --version
 
 ```bash
 git clone https://github.com/fathiahmet/student-management-system.git
+
 cd student-management-system
 ```
 
@@ -185,11 +192,13 @@ Then install the frontend and backend dependencies:
 npm run install-all
 ```
 
+> **Note:** If your root `package.json` does not contain an `install-all` script, install the dependencies manually by running `npm install` inside both the `client` and `server` directories.
+
 ---
 
 ## 3. Configure the Database
 
-Create a MySQL database named:
+Create a MySQL/MariaDB database named:
 
 ```text
 student_management
@@ -197,7 +206,7 @@ student_management
 
 If you are using XAMPP, you can create the database through **phpMyAdmin**.
 
-Then execute the database schema:
+Then execute:
 
 ```text
 database/schema.sql
@@ -215,17 +224,19 @@ database/seed.sql
 
 ## 4. Configure the Backend
 
-Inside the `server` directory, create a file named:
+Inside the `server` directory, create:
 
 ```text
 .env
 ```
 
-Use the following file as your template:
+Use:
 
 ```text
 server/.env.example
 ```
+
+as the template.
 
 Configure the database connection, JWT secret, server port, and other required environment variables according to the `.env.example` file.
 
@@ -249,7 +260,7 @@ client/.env.example
 
 as the template.
 
-For a local development environment, the API URL will normally be:
+For local development, the API URL is normally:
 
 ```env
 VITE_API_URL=http://localhost:5000/api
@@ -267,15 +278,15 @@ From the project root:
 npm run dev
 ```
 
-This starts both the frontend and backend using the root project's development script.
+This starts both the frontend and backend using the root development script.
 
-The frontend is normally available at:
+Frontend:
 
 ```text
 http://localhost:5173
 ```
 
-The backend is normally available at:
+Backend:
 
 ```text
 http://localhost:5000
@@ -297,6 +308,33 @@ npm run client
 
 ---
 
+# GPA Calculation
+
+StudentHub calculates GPA using a **credit-weighted 4.0 scale**.
+
+The system:
+
+1. Calculates the percentage for each assessment.
+2. Calculates the overall percentage for each enrolled course.
+3. Converts the course percentage to a letter grade.
+4. Converts the letter grade to grade points.
+5. Weights the grade points using the course credit hours.
+6. Calculates the student's GPA from the total quality points and credit hours.
+
+### Grade Scale
+
+| Percentage | Grade | Grade Point |
+| ---------: | :---: | ----------: |
+|     90–100 |   A   |         4.0 |
+|      80–89 |   B   |         3.0 |
+|      70–79 |   C   |         2.0 |
+|      60–69 |   D   |         1.0 |
+|   Below 60 |   F   |         0.0 |
+
+The GPA is displayed on the **Student Dashboard**.
+
+---
+
 # Future Features
 
 The following features are planned for future releases of StudentHub.
@@ -305,7 +343,6 @@ The following features are planned for future releases of StudentHub.
 
 - Password reset and account recovery
 - Email verification
-- User profile management
 - Profile photo upload
 - Change password functionality
 - Improved session and token management
@@ -313,7 +350,6 @@ The following features are planned for future releases of StudentHub.
 
 ## 📝 Registration & Approval Workflow
 
-- Registration status tracking
 - Administrator approval notifications
 - Rejection reasons and resubmission
 - Registration history
@@ -327,7 +363,7 @@ The following features are planned for future releases of StudentHub.
 - Student document management
 - Student ID generation
 - Printable student ID cards
-- Academic history
+- Extended academic history
 - Student transfer and withdrawal management
 
 ## 👨‍🏫 Teacher Management
@@ -342,10 +378,15 @@ The following features are planned for future releases of StudentHub.
 
 - Academic year and semester management
 - Class and section management
-- Course prerequisites
+- Advanced course prerequisite management
 - Course scheduling improvements
 - Academic calendar
 - Curriculum management
+- Semester result generation
+- Student transcripts
+- Printable academic reports
+- Grade analytics
+- Result publishing controls
 
 ## 📋 Attendance
 
@@ -355,21 +396,11 @@ The following features are planned for future releases of StudentHub.
 - Attendance notifications
 - Exportable attendance reports
 
-## 📊 Grades & Results
-
-- Grade calculation and GPA management
-- Semester result generation
-- Student transcripts
-- Printable academic reports
-- Grade analytics
-- Result publishing controls
-
 ## 💰 Finance
 
 - Student payment management
 - Fee structures
 - Payment history
-- Outstanding balance tracking
 - Financial reports
 - Printable receipts
 
@@ -395,7 +426,7 @@ The following features are planned for future releases of StudentHub.
 
 - Role and permission management
 - System settings
-- Audit-log improvements
+- Advanced audit-log features
 - Backup and restore tools
 - Data import and export
 - System activity monitoring
@@ -408,7 +439,7 @@ The following features are planned for future releases of StudentHub.
 - Improved accessibility
 - Advanced dashboard customization
 - Improved navigation and search
-- Consistent StudentHub design system
+- Expanded StudentHub design system
 
 ## 🛡️ Security
 
@@ -435,18 +466,35 @@ The following features are planned for future releases of StudentHub.
 
 🚧 **Active Development**
 
-StudentHub is currently under active development. Features, functionality, security, and user interface components are continuously being improved.
+StudentHub is an educational full-stack software engineering project currently under active development.
+
+The project already includes core functionality for:
+
+- Authentication and authorization
+- User registration and account approval
+- Student and teacher management
+- Department and program management
+- Course management
+- Enrollment management
+- Attendance management
+- Grade management
+- Grade-letter calculation
+- Credit-weighted GPA calculation
+- Student dashboards
+- Activity logging
+
+Additional features, security improvements, reporting tools, and deployment functionality are planned for future releases.
 
 ---
 
-## License
+# License
 
 This project is currently being developed as an educational/software engineering project.
 
 ---
 
-## Author
+# Author
 
 **Fathi Ahmed**
 
-GitHub: [@fathiahmet](https://github.com/fathiahmet)
+GitHub: [@fathi-ahmet](https://github.com/fathi-ahmet)
