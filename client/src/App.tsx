@@ -1,4 +1,5 @@
 import Register from "./Register";
+import RegistrationStatus from "./RegistrationStatus";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Routes,
@@ -1423,6 +1424,9 @@ export default function App() {
 
       {/* Registration success page */}
       <Route path="/registration-submitted" element={<RegistrationSubmit />} />
+
+      {/* Registration status page */}
+      <Route path="/registration-status" element={<RegistrationStatus />} />
 
       {/* Login */}
       <Route

@@ -535,6 +535,74 @@ app.post(
   }),
 );
 
+// Public registration status
+app.get(
+  "/api/auth/registration-status",
+  asyncRoute(async (req, res) => {
+    const email = String(req.query.email || "")
+      .trim()
+      .toLowerCase();
+
+    if (!email) {
+      return res.status(400).json({
+        message: "Email address is required.",
+      });
+    }
+
+    const rows = await query(
+      `
+      SELECT
+        u.id,
+        u.name,
+        u.email,
+        u.role,
+        u.status,
+        u.created_at,
+        CASE
+          WHEN u.role = 'STUDENT' THEN s.student_id
+          WHEN u.role = 'TEACHER' THEN t.employee_id
+        END AS application_id,
+        d.name AS department_name,
+        CASE
+          WHEN u.role = 'STUDENT' THEN p.name
+          ELSE NULL
+        END AS program_name
+      FROM users u
+      LEFT JOIN students s
+        ON s.user_id = u.id
+      LEFT JOIN teachers t
+        ON t.user_id = u.id
+      LEFT JOIN departments d
+        ON d.id = COALESCE(s.department_id, t.department_id)
+      LEFT JOIN programs p
+        ON p.id = s.program_id
+      WHERE u.email = ?
+      LIMIT 1
+      `,
+      [email],
+    );
+
+    if (!rows.length) {
+      return res.status(404).json({
+        message: "No registration was found for this email address.",
+      });
+    }
+
+    const registration = rows[0];
+
+    res.json({
+      name: registration.name,
+      email: registration.email,
+      role: registration.role,
+      status: registration.status,
+      applicationId: registration.application_id,
+      department: registration.department_name,
+      program: registration.program_name,
+      submittedAt: registration.created_at,
+    });
+  }),
+);
+
 app.get(
   "/api/auth/me",
   authRequired,
