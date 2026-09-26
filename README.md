@@ -162,9 +162,9 @@ student-management-system/
 
 ---
 
-# Installation & Setup
+## Installation & Setup
 
-## Prerequisites
+### Prerequisites
 
 Before running StudentHub, make sure the following are installed:
 
@@ -322,7 +322,7 @@ npm run client
 
 ---
 
-# GPA Calculation
+## GPA Calculation
 
 StudentHub calculates GPA using a **credit-weighted 4.0 scale**.
 
@@ -349,11 +349,11 @@ The GPA is displayed on the **Student Dashboard**.
 
 ---
 
-# Future Features
+## Future Features
 
 The following features are planned for future releases of StudentHub.
 
-## 🔐 Authentication & User Management
+## 🔐 Planned Authentication & User Management
 
 - Password reset and account recovery
 - Email verification
@@ -388,7 +388,7 @@ The following features are planned for future releases of StudentHub.
 - Teacher assignments
 - Teacher performance records
 
-## 🎓 Academic Management
+## 🎓 Academic Management Enhancements
 
 - Academic year and semester management
 - Class and section management
@@ -476,7 +476,7 @@ The following features are planned for future releases of StudentHub.
 
 ---
 
-# Project Status
+## Project Status
 
 🚧 **Active Development**
 
@@ -501,14 +501,14 @@ Additional features, security improvements, reporting tools, and deployment func
 
 ---
 
-# License
+## License
 
 This project is currently being developed as an educational/software engineering project.
 
 ---
 
-# Author
+## Author
 
-**Fathi Ahmed**
+### Fathi Ahmed
 
 GitHub: [@fathi-ahmet](https://github.com/fathi-ahmet)
