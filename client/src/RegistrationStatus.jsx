@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import "./RegistrationStatus.css";
 
 const API_URL = "http://localhost:5000/api";
 
