@@ -71,17 +71,31 @@ StudentHub is a web-based **Student Management System** designed to help educati
 
 ### Login
 
+![StudentHub Login](screenshots/login.png)
+
 ### Registration
+
+![StudentHub Registration](screenshots/register.png)
 
 ### Admin Dashboard
 
+![StudentHub Dashboard](screenshots/admin_dashboard.png)
+
 ### Account Approvals
+
+![StudentHub Account approval](screenshots/account_approvals.png)
 
 ### Student Management
 
+![StudentHub student dashboard](screenshots/student_dashboard.png)
+
 ### Enrollment
 
+![StudentHub Enrollment](screenshots/enrollments.png)
+
 ### Student Dashboard
+
+![StudentHub Students](screenshots/students.png)
 
 ---
 
