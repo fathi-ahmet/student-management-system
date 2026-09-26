@@ -2051,6 +2051,7 @@ app.post(
   allow("ADMIN", "TEACHER"),
   asyncRoute(async (req, res) => {
     const { enrollment_id, assessment, score, max_score = 100 } = req.body;
+
     if (req.user.role === "TEACHER") {
       const teacherRows = await query(
         `
@@ -2070,12 +2071,44 @@ app.post(
         });
       }
     }
+
+    // Calculate percentage and grade letter
+    const percentage = (Number(score) / Number(max_score)) * 100;
+
+    let grade_letter;
+
+    if (percentage >= 90) {
+      grade_letter = "A";
+    } else if (percentage >= 80) {
+      grade_letter = "B";
+    } else if (percentage >= 70) {
+      grade_letter = "C";
+    } else if (percentage >= 60) {
+      grade_letter = "D";
+    } else {
+      grade_letter = "F";
+    }
+
     const r = await query(
-      "INSERT INTO grades(enrollment_id,assessment,score,max_score) VALUES(?,?,?,?)",
-      [enrollment_id, assessment, score, max_score],
+      `
+      INSERT INTO grades(
+        enrollment_id,
+        assessment,
+        score,
+        max_score,
+        grade_letter
+      )
+      VALUES(?,?,?,?,?)
+      `,
+      [enrollment_id, assessment, score, max_score, grade_letter],
     );
+
     await audit(req.user, "CREATE", "grade", r.insertId);
-    res.status(201).json({ id: r.insertId });
+
+    res.status(201).json({
+      id: r.insertId,
+      grade_letter,
+    });
   }),
 );
 
@@ -2093,22 +2126,57 @@ app.put(
         });
       }
     }
+
     const { enrollment_id, assessment, score, max_score = 100 } = req.body;
 
-    await query(
-      `UPDATE grades
-         SET enrollment_id=?,
-             assessment=?,
-             score=?,
-             max_score=?
-         WHERE id=?`,
-      [enrollment_id, assessment, score, max_score, req.params.id],
+    // Calculate percentage and grade letter
+    const percentage = (Number(score) / Number(max_score)) * 100;
+
+    let grade_letter;
+
+    if (percentage >= 90) {
+      grade_letter = "A";
+    } else if (percentage >= 80) {
+      grade_letter = "B";
+    } else if (percentage >= 70) {
+      grade_letter = "C";
+    } else if (percentage >= 60) {
+      grade_letter = "D";
+    } else {
+      grade_letter = "F";
+    }
+
+    const result = await query(
+      `
+      UPDATE grades
+      SET enrollment_id=?,
+          assessment=?,
+          score=?,
+          max_score=?,
+          grade_letter=?
+      WHERE id=?
+      `,
+      [
+        enrollment_id,
+        assessment,
+        score,
+        max_score,
+        grade_letter,
+        req.params.id,
+      ],
     );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        message: "Grade not found.",
+      });
+    }
 
     await audit(req.user, "UPDATE", "grade", req.params.id);
 
     res.json({
       id: Number(req.params.id),
+      grade_letter,
     });
   }),
 );
